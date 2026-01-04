@@ -1,0 +1,50 @@
+CREATE DATABASE IF NOT EXISTS banking_db;
+USE banking_db;
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    userId VARCHAR(64) UNIQUE NOT NULL,
+    account_number BIGINT UNIQUE NOT NULL CHECK (account_number BETWEEN 1000000000 AND 9999999999), -- Ensures exactly 10 digits
+    email_id VARCHAR(256) UNIQUE NOT NULL,
+    salt VARCHAR(16) NOT NULL,
+    password VARCHAR(64) NOT NULL -- Stores the SHA256 Hash
+);
+
+INSERT INTO users (id, userId, account_number, email_id, salt, password) VALUES
+(1, 'user1', 1122334401, 'user1@email.com', '8AmnJDQA', 'ed9408ece9108cd79e0e37d7d489ab22f8570450147a9144aae71c96a81901e5'),
+(2, 'user2', 1122334402, 'user2@email.com', 'KJionI98', '67a9d57b6bbdbdc9dd5c54895be5d5fc9f85dac587fb917d41f2df3e0aeb5514'),
+(3, 'user3', 1122334403, 'user3@email.com', 'Mmk89a', '4023f13fb266a20197bf06b8e7bfdb36e165c56e04d2807e10de98a37c9f9e46'),
+(4, 'user4', 1122334404, 'user4@email.com', 'm99023mxmaAAs', 'ff09b652e444cc93312fd43bbaaa855a394e449331053b66cd299d2ffce0c940'),
+(5, 'user5', 1122334405, 'user5@email.com', '88239MASkp', '994981100b4ba286cfcf7223863a91f8d3c1d31d422a64717fa447f6d82710f3');
+
+CREATE TABLE account_details (
+    account_number BIGINT PRIMARY KEY,
+    ifsc_code VARCHAR(20) NOT NULL,
+    upi_id VARCHAR(50),
+    bank_branch VARCHAR(64),
+    account_holder_name VARCHAR(64),
+    account_balance DECIMAL(15, 2),
+
+    FOREIGN KEY (account_number) REFERENCES users(account_number) ON DELETE CASCADE
+);
+
+INSERT INTO account_details (account_number, ifsc_code, upi_id, bank_branch, account_holder_name, account_balance) VALUES
+(1122334401, 'IFSCODE0001', 'user1.upi@bank', 'Velachery, Chennai 600012', 'Paras Dahia S', 3064.21),
+(1122334402, 'IFSCODE0002', 'user2.upi@bank', 'Cyber Cafe, Hyderabad 500354', 'Vikas Ojaswin', 5737.25),
+(1122334403, 'IFSCODE0003', 'user3.upi@bank', 'Koregaon Park, Pune 411090', 'Virat Kohli', 2643.01),
+(1122334404, 'IFSCODE0004', 'user4.upi@bank', 'Indiranagar, Bangalore 560038', 'Rohit Sharma', 4893.06),
+(1122334405, 'IFSCODE0005', 'user5.upi@bank', 'Bandra, New Mumbai 400050', 'Murali Krishnan', 3896.72);
+
+
+CREATE TABLE transaction_history (
+    transaction_id VARCHAR(16) PRIMARY KEY,
+    transaction_date DATETIME NOT NULL,
+    sender_name VARCHAR(64) NOT NULL,
+    receiver_name VARCHAR(64) NOT NULL,
+    sender_account_number BIGINT NOT NULL,
+    receiver_account_number BIGINT NOT NULL,
+    mode VARCHAR(10) NOT NULL,
+    amount DECIMAL(15, 2) NOT NULL,
+    note VARCHAR(256),
+    status VARCHAR(20) DEFAULT 'SUCCESS'
+);

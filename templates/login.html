@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank Login Page</title>
+    <link rel="icon" href="{{ url_for('static', filename='images/logo.ico') }}" type="image/x-icon">
+    <style>
+        /* [Previous CSS remains exactly the same] */
+        :root {
+            --primary-color: #0056b3;
+            --primary-hover: #004494;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-muted: #666666;
+            --border-color: #d1d5db;
+            --focus-ring: rgba(0, 86, 179, 0.25);
+            --radius: 8px;
+            --transition: 0.3s ease;
+            --error-bg: #fee2e2;
+            --error-text: #dc2626;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+
+        body {
+            background-color: var(--bg-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .login-card {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+
+        .logo-area { margin-bottom: 30px; }
+        .logo-area h1 { color: var(--primary-color); font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+        .logo-area p { color: var(--text-muted); font-size: 14px; margin-top: 5px; }
+
+        .input-group { text-align: left; margin-bottom: 20px; position: relative; }
+        .input-label { display: block; font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 8px; }
+        .input-wrapper { position: relative; display: flex; align-items: center; }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 15px;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            transition: var(--transition);
+            outline: none;
+        }
+        .form-control:focus { border-color: var(--primary-color); box-shadow: 0 0 0 4px var(--focus-ring); }
+
+        .password-toggle {
+            position: absolute; right: 15px; cursor: pointer; color: var(--text-muted);
+            display: flex; align-items: center; justify-content: center; transition: color 0.2s;
+        }
+        .password-toggle:hover { color: var(--primary-color); }
+
+        .btn-submit {
+            width: 100%; padding: 14px; background-color: var(--primary-color); color: white;
+            border: none; border-radius: var(--radius); font-size: 16px; font-weight: 600;
+            cursor: pointer; transition: background-color 0.2s; display: flex;
+            align-items: center; justify-content: center; position: relative; margin-top: 10px;
+        }
+        .btn-submit:hover { background-color: var(--primary-hover); }
+        .btn-submit:disabled { background-color: #93c5fd; cursor: not-allowed; }
+
+        .spinner {
+            display: none; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%; border-top-color: #fff; animation: spin 0.8s ease-in-out infinite; position: absolute;
+        }
+        .btn-submit.loading .btn-text { opacity: 0; }
+        .btn-submit.loading .spinner { display: block; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- NEW: ERROR BOX --- */
+        .error-message {
+            background-color: var(--error-bg);
+            color: var(--error-text);
+            padding: 12px;
+            border-radius: var(--radius);
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: none; /* Hidden by default */
+            border: 1px solid #fca5a5;
+        }
+
+        .footer-links { margin-top: 20px; font-size: 13px; }
+        .footer-links a { color: var(--primary-color); text-decoration: none; font-weight: 500; }
+        .footer-links a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="logo-area">
+            <h1>AnnaUniv Project</h1>
+            <p>Banking Portal WebApp</p>
+        </div>
+
+        <div id="errorBox" class="error-message"></div>
+
+        <form id="loginForm">
+            <div class="input-group">
+                <label class="input-label" for="identity">User ID / Email / Account No.</label>
+                <div class="input-wrapper">
+                    <input type="text" id="identity" class="form-control" placeholder="Enter your ID" required autocomplete="off">
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label" for="password">Password</label>
+                <div class="input-wrapper">
+                    <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+                    <div class="password-toggle" id="togglePassword">
+                        <svg id="eye-open" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        <svg id="eye-closed" style="display:none;" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit" id="submitBtn">
+                <span class="btn-text">Secure Sign In</span>
+                <span class="spinner"></span>
+            </button>
+
+            <div class="footer-links">
+                <a href="#" onclick="alert('Please call bank manager to retrieve account information')">Forgot Password?</a>
+            </div>
+        </form>
+    </div>
+    <script>
+        const passwordInput = document.getElementById('password');
+        const toggleBtn = document.getElementById('togglePassword');
+        const eyeOpen = document.getElementById('eye-open');
+        const eyeClosed = document.getElementById('eye-closed');
+        const loginForm = document.getElementById('loginForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const errorBox = document.getElementById('errorBox');
+
+        // Toggle Password Logic
+        toggleBtn.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            eyeOpen.style.display = type === 'text' ? 'none' : 'block';
+            eyeClosed.style.display = type === 'text' ? 'block' : 'none';
+        });
+
+        // Login Logic
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // 1. Reset UI
+            errorBox.style.display = 'none';
+            submitBtn.classList.add('loading');
+            submitBtn.setAttribute('disabled', 'true');
+
+            // 2. Gather Data
+            const identity = document.getElementById('identity').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                // 3. Send to Flask Backend
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ identity: identity, password: password })
+                });
+
+                const data = await response.json();
+
+                // 4. Handle Response
+                if (response.ok) {
+                    // Success: Redirect to Dashboard
+                    window.location.href = data.redirect;
+                } else {
+                    errorBox.innerText = data.error || "Invalid Credentials. Please try again.";
+                    errorBox.style.display = 'block';
+                }
+            } catch (err) {
+                errorBox.innerText = "Connection Error!";
+                errorBox.style.display = 'block';
+            } finally {
+                submitBtn.classList.remove('loading');
+                submitBtn.removeAttribute('disabled');
+            }
+        });
+    </script>
+</body>
+</html>
